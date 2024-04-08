@@ -94,6 +94,76 @@ Response:
 
 ### 3. Cпособы отмены запроса, включая объект "AbortController"
 
+Отмена HTTP-запросов может быть необходима в ряде сценариев, где пользовательский интерфейс часто обновляется в ответ на действия пользователя или изменения данных. Отмена HTTP-запросов может играть ключевую роль в предотвращении **race conditions** (состояний гонки) в веб-приложениях.
+
+Некоторые из способов отмены запросов:
+
+1. Использование объекта **AbortController** с Fetch API
+
+```js
+const controller = new AbortController();
+const signal = controller.signal;
+
+fetch(url, { signal })
+  .then(response => /* обработка ответа */)
+  .catch(err => /* обработка ошибок, включая отмену */);
+
+// Для отмены запроса:
+controller.abort();
+```
+
+2. Использование **XMLHttpRequest**
+
+```js
+const xhr = new XMLHttpRequest();
+xhr.open("GET", url);
+xhr.send();
+
+// Для отмены запроса:
+xhr.abort();
+```
+
+3. Отмена неактуальных запросов при помощи функции debounce
+
+```js
+function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
+  callback: T,
+  delay: number
+) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    return new Promise<ReturnType<T> | Error>((resolve, reject) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          let output = callback(...args);
+          resolve(output);
+        } catch (err) {
+          if (err instanceof Error) {
+            reject(err);
+          }
+          reject(new Error(`An error has occurred:${err}`));
+        }
+      }, delay);
+    });
+  };
+}
+
+
+const searchBox = document.querySelector<HTMLInputElement>("#search-box");
+
+searchBox?.addEventListener("input", (e) => {
+  const { value } = e.target as HTMLInputElement;
+  debounced(value).then(console.log).catch(console.log);
+});
+
+const debounced = debounce(fetchByName, 1000);
+
+function fetchByName(name: string) {
+  return fetch(`https://rickandmortyapi.com/api/character?name=${name}`);
+}
+```
+
 ### 4. Написать по 2 примера создания примитивных значений (если есть несколько способов - использовать) (string, number, boolean, null, undefined, symbol, bigInt)
 
 - String:
