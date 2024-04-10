@@ -100,6 +100,12 @@ for (let key in counter) {
 }
 ```
 
+5. С помощью глобальной функции **structuredClone()**:
+
+```js
+const counterCopy = structuredClone(counter);
+```
+
 ### 3. Создать функцию makeCounter всеми описанными и возможными способами;
 
 1. Объявление функции (Function Declaration):
